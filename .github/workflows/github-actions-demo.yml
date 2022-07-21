@@ -1,5 +1,10 @@
-name: GitHub Actions Demo
-on: [push]
+on:
+  push:
+    tags:
+      - 'v*'
+
+name: GitHub Actions Demo on Tag
+
 jobs:
   Explore-GitHub-Actions:
     runs-on: ubuntu-latest
