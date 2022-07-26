@@ -27,5 +27,14 @@ jobs:
       - name: List files in the repository
         run: |
           ls ${{ github.workspace }}
+      - name: Find and Replace
+        uses: jacobtomlinson/gha-find-replace@v2
+        with:
+          find: "0.0.1"
+          replace: ${{steps.tag.outputs.tag}}
+          regex: false
+      - name: Print makefile with new tag
+        run: |
+          cat ${{ github.workspace }}/blink/CMakeLists.txt
       - run: echo "🍏 This job's status is ${{ job.status }}."
       
