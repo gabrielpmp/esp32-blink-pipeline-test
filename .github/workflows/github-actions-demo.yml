@@ -36,10 +36,44 @@ jobs:
       - name: Print makefile with new tag
         run: |
           cat ${{ github.workspace }}/blink/CMakeLists.txt
-      - name: Push changes
-        uses: ad-m/github-push-action@v0.6.0
+      # - name: Push changes
+      #   uses: ad-m/github-push-action@v0.6.0
+      #   with:
+      #     github_token: ${{ secrets.GITHUB_TOKEN }}
+      #     branch: ${{ github.ref }}
+      - run: echo "🍏 This job's status is ${{ job.status }}."
+
+  Build-ESP32-Firmware:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Get tag
+        id: tag
+        uses: dawidd6/action-get-tag@v1
         with:
-          github_token: ${{ secrets.GITHUB_TOKEN }}
-          branch: ${{ github.ref }}
+          strip_v: true
+      - name: Print tag
+        run: echo ${{steps.tag.outputs.tag}}
+      - name: Check out repository code
+        uses: actions/checkout@v3
+      - run: echo "💡 The ${{ github.repository }} repository has been cloned to the runner."
+      - run: echo "🖥️ The workflow is now ready to test your code on the runner."
+      - name: List files in the repository
+        run: |
+          ls ${{ github.workspace }}
+      - name: Find and Replace
+        uses: jacobtomlinson/gha-find-replace@v2
+        with:
+          find: "0.0.1"
+          replace: ${{steps.tag.outputs.tag}}
+          regex: false
+      - name: Print makefile with new tag
+        run: |
+          cat ${{ github.workspace }}/blink/CMakeLists.txt
+      - name: esp-idf build
+        uses: espressif/esp-idf-ci-action@v1
+        with:
+          esp_idf_version: v4.3.1
+          target: esp32
+          path: 'blink'
       - run: echo "🍏 This job's status is ${{ job.status }}."
       
