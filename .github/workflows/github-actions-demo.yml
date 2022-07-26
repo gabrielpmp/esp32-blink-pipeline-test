@@ -3,10 +3,10 @@ on:
     tags:
       - 'v*.*.*'
 
-name: GitHub Actions Demo on Tag
+name: Create ESP32 Firmeware Release on Tag
 
 jobs:
-  Build-ESP32-Firmware:
+  build:
     runs-on: ubuntu-latest
     steps:
       - name: Get tag
@@ -14,34 +14,42 @@ jobs:
         uses: dawidd6/action-get-tag@v1
         with:
           strip_v: true
-      - name: Print tag
-        run: echo ${{steps.tag.outputs.tag}}
       - name: Check out repository code
         uses: actions/checkout@v3
-      - run: echo "💡 The ${{ github.repository }} repository has been cloned to the runner."
-      - run: echo "🖥️ The workflow is now ready to test your code on the runner."
-      - name: List files in the repository
-        run: |
-          ls ${{ github.workspace }}
       - name: Find and Replace
         uses: jacobtomlinson/gha-find-replace@v2
         with:
           find: "0.0.1"
           replace: ${{steps.tag.outputs.tag}}
           regex: false
-      - name: Print makefile with new tag
-        run: |
-          cat ${{ github.workspace }}/blink/CMakeLists.txt
       - name: esp-idf build
         uses: espressif/esp-idf-ci-action@v1
         with:
           esp_idf_version: v4.3.1
           target: esp32
           path: 'blink'
+      - name: create cache entry
+        uses: actions/cache@v3
+        id: restore-build
+        with:
+          path: blink/build/blink.bin
+          key: ${{ github.sha }}
+  
+  release:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/cache@v3
+        id: restore-build
+        with:
+          path: blink/build/blink.bin
+          key: ${{ github.sha }}
+      - name: Get tag
+        id: tag
+        uses: dawidd6/action-get-tag@v1
       - name: Release
         uses: softprops/action-gh-release@v1
         with:
-          name: "ESP32 Blink Example Release v${{ steps.tag.outputs.tag }}"
+          name: "ESP32 Blink Example Release ${{ steps.tag.outputs.tag }}"
           files: blink/build/blink.bin
       - run: echo "🍏 This job's status is ${{ job.status }}."
       
