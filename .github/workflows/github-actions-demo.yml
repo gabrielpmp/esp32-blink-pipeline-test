@@ -36,5 +36,10 @@ jobs:
       - name: Print makefile with new tag
         run: |
           cat ${{ github.workspace }}/blink/CMakeLists.txt
+      - name: Push changes
+        uses: ad-m/github-push-action@v0.6.0
+        with:
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          branch: ${{ github.ref }}
       - run: echo "🍏 This job's status is ${{ job.status }}."
       
